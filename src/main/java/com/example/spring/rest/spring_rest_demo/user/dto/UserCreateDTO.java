@@ -1,34 +1,19 @@
-package com.example.spring.rest.spring_rest_demo.user.model;
+package com.example.spring.rest.spring_rest_demo.user.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
-@Entity
-@Table(name = "users")
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "firstname")
+public class UserCreateDTO {
     private String firstName;
-    @Column(name = "lastname")
     private String lastName;
     private String email;
-    @Column(name = "phonenumber")
     private int phoneNumber;
     private String password;
 
-    public User(){}
-    
-    public Long getId(){
-        return this.id;
-    }
-    public void setId(Long id){
-        this.id = id;
+
+    public UserCreateDTO(String firstName, String lastName, String email, int phoneNumber, String password){
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.password = password;
     }
 
     public String getFirstName(){
@@ -65,5 +50,4 @@ public class User {
     public void setPassword(String password){
         this.password = password;
     }
-
 }
