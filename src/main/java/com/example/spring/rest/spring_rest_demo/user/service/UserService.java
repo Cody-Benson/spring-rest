@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 import com.example.spring.rest.spring_rest_demo.user.dto.UserCreateDTO;
+import com.example.spring.rest.spring_rest_demo.user.dto.UserReplaceDTO;
+import com.example.spring.rest.spring_rest_demo.user.exception.ConflictException;
+import com.example.spring.rest.spring_rest_demo.user.exception.ResourceNotFoundException;
 import com.example.spring.rest.spring_rest_demo.user.model.User;
 import com.example.spring.rest.spring_rest_demo.user.repository.UserRepository;
 
@@ -19,21 +22,18 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public Optional<User> getUserById(Long id){
+    public User getUserById(Long id){
         Optional<User> user = userRepository.findById(id);
-        if(user.isEmpty()){
-            
+        if(!user.isPresent()){
+            throw new ResourceNotFoundException("user with id:" + id + " does not exist.");
         }
-        return user;
+        return user.get();
     }
 
-    public boolean deleteUserById(Long id){
-        if(userRepository.existsById(id)){
-            userRepository.deleteById(id);
-            return true;
-        }else{
-            return false;
-        }
+    public void deleteUserById(Long id){
+        getUserById(id);
+        userRepository.deleteById(id);
+        return;
     }
 
     public boolean userEmailExists(String email){
@@ -42,6 +42,12 @@ public class UserService {
     }
 
     public User createUser(UserCreateDTO userDTO){
+        String email = userDTO.getEmail();
+        boolean emailExists = userRepository.existsByEmail(email);
+        if(emailExists){
+            throw new ConflictException("user with email:" + email + " already exists");
+        }
+
         User newUser = new User();
         newUser.setFirstName(userDTO.getFirstName());
         newUser.setLastName(userDTO.getLastName());
@@ -51,5 +57,18 @@ public class UserService {
         newUser = userRepository.save(newUser);
         
         return newUser;
+    }
+
+    public User replaceUser(Long id, UserReplaceDTO userDTO){
+        User user = getUserById(id);
+
+        user.setFirstName(userDTO.getFirstName());
+        user.setLastName(userDTO.getLastName());
+        user.setEmail(userDTO.getEmail());
+        user.setPhoneNumber(userDTO.getPhoneNumber());
+        user.setPassword(userDTO.getPassword());
+
+        userRepository.save(user);
+        return user;
     }
 }
