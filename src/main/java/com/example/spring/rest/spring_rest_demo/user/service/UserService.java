@@ -42,20 +42,22 @@ public class UserService {
     }
 
     public User createUser(UserCreateDTO userDTO){
+        System.out.println("hello therefjslfjkslfklejkfejsklfjeskl");
         String email = userDTO.getEmail();
         boolean emailExists = userRepository.existsByEmail(email);
         if(emailExists){
             throw new ConflictException("user with email:" + email + " already exists");
         }
 
-        User newUser = new User();
-        newUser.setFirstName(userDTO.getFirstName());
-        newUser.setLastName(userDTO.getLastName());
-        newUser.setEmail(userDTO.getEmail());
-        newUser.setPhoneNumber(userDTO.getPhoneNumber());
-        newUser.setPassword(userDTO.getPassword());
+        User newUser = User.builder()
+        .firstName(userDTO.getFirstName())
+        .lastName(userDTO.getLastName())
+        .email(userDTO.getEmail())
+        .phoneNumber(userDTO.getPhoneNumber())
+        .password(userDTO.getPassword())
+        .build();
         newUser = userRepository.save(newUser);
-        
+
         return newUser;
     }
 

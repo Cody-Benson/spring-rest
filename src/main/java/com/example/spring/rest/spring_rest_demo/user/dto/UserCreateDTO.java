@@ -7,13 +7,15 @@ public class UserCreateDTO {
     private int phoneNumber;
     private String password;
 
+    //for request body parsing
+    private UserCreateDTO(){};
 
-    public UserCreateDTO(String firstName, String lastName, String email, int phoneNumber, String password){
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.password = password;
+    public UserCreateDTO(UserCreateDTOBuilder builder){
+        this.firstName = builder.firstName;
+        this.lastName = builder.lastName;
+        this.email = builder.email;
+        this.phoneNumber = builder.phoneNumber;
+        this.password = builder.password;
     }
 
     public String getFirstName(){
@@ -49,5 +51,54 @@ public class UserCreateDTO {
     }
     public void setPassword(String password){
         this.password = password;
+    }
+
+    public static class UserCreateDTOBuilder{
+        private String firstName;
+        private String lastName;
+        private String email;
+        private int phoneNumber;
+        private String password;
+
+        public UserCreateDTOBuilder(){
+            this.firstName = "cody";
+            this.lastName = "benson";
+            this.email = "cody@mail.com";
+            this.phoneNumber = 1234567890;
+            this.password = "password";
+        }
+
+        public UserCreateDTOBuilder firstName(String firstName){
+            this.firstName = firstName;
+            return this;
+        }
+
+        public UserCreateDTOBuilder lastName(String lastName){
+            this.lastName = lastName;
+            return this;
+        }
+
+        public UserCreateDTOBuilder email(String email){
+            this.email = email;
+            return this;
+        }
+
+        public UserCreateDTOBuilder phoneNumber(int phoneNumber){
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public UserCreateDTOBuilder password(String password){
+            this.password = password;
+            return this;
+        }
+
+        public UserCreateDTO build(){
+            return new UserCreateDTO(this);
+        }
+    }
+
+    public static UserCreateDTOBuilder builder(){
+        return new UserCreateDTOBuilder();
     }
 }

@@ -7,13 +7,15 @@ public class UserReplaceDTO {
     private int phoneNumber;
     private String password;
 
+    //for request body parsing
+    private UserReplaceDTO(){}
 
-    public UserReplaceDTO(String firstName, String lastName, String email, int phoneNumber, String password){
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.password = password;
+    public UserReplaceDTO(UserReplaceDTOBuilder builder){
+        this.firstName = builder.firstName;
+        this.lastName = builder.lastName;
+        this.email = builder.email;
+        this.phoneNumber = builder.phoneNumber;
+        this.password = builder.password;
     }
 
     public String getFirstName(){
@@ -49,5 +51,54 @@ public class UserReplaceDTO {
     }
     public void setPassword(String password){
         this.password = password;
+    }
+
+    public static class UserReplaceDTOBuilder {
+        public String firstName;
+        public String lastName;
+        public String email;
+        public int phoneNumber;
+        public String password;
+
+        public UserReplaceDTOBuilder(){
+            this.firstName = "cody";
+            this.lastName = "benson";
+            this.email = "cody@mail.com";
+            this.phoneNumber = 1234567890;
+            this.password = "password";
+        }
+
+        public UserReplaceDTOBuilder firstName(String firstName){
+            this.firstName = firstName;
+            return this;
+        }
+
+        public UserReplaceDTOBuilder lastName(String lastName){
+            this.lastName = lastName;
+            return this;
+        }
+
+        public UserReplaceDTOBuilder email(String email){
+            this.email = email;
+            return this;
+        }
+
+        public UserReplaceDTOBuilder phoneNumber(int phoneNumber){
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public UserReplaceDTOBuilder password(String password){
+            this.password = password;
+            return this;
+        }
+
+        public UserReplaceDTO build(){
+            return new UserReplaceDTO(this);
+        }
+    }
+
+    public static UserReplaceDTOBuilder builder(){
+        return new UserReplaceDTOBuilder();
     }
 }

@@ -23,7 +23,16 @@ public class User {
     private String password;
 
     public User(){}
-    
+
+    public User(UserBuilder builder){
+        this.id = builder.id;
+        this.firstName = builder.firstName;
+        this.lastName = builder.lastName;
+        this.email = builder.email;
+        this.phoneNumber = builder.phoneNumber;
+        this.password = builder.password;
+    }
+
     public Long getId(){
         return this.id;
     }
@@ -66,4 +75,59 @@ public class User {
         this.password = password;
     }
 
+    public static class UserBuilder{
+        private Long id;
+        private String firstName;
+        private String lastName;
+        private String email;
+        private int phoneNumber;
+        private String password;
+
+        public UserBuilder() {
+            // Default values
+            this.firstName = "cody";
+            this.lastName = "benson";
+            this.email = "cody@mail.com";
+            this.phoneNumber = 1234567890;
+            this.password = "password";
+        }
+
+        public UserBuilder id(Long id){
+            this.id = id;
+            return this;
+        }
+
+        public UserBuilder firstName(String firstName){
+            this.firstName = firstName;
+            return this;
+        }
+
+        public UserBuilder lastName(String lastName){
+            this.lastName = lastName;
+            return this;
+        }
+
+        public UserBuilder email(String email){
+            this.email = email;
+            return this;
+        }
+
+        public UserBuilder phoneNumber(int phoneNumber){
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public UserBuilder password(String password){
+            this.password = password;
+            return this;
+        }
+
+        public User build(){
+            return new User(this);
+        }
+    }
+
+    public static UserBuilder builder(){
+        return new UserBuilder();
+    }
 }
