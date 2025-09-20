@@ -42,7 +42,6 @@ public class UserService {
     }
 
     public User createUser(UserCreateDTO userDTO){
-        System.out.println("hello therefjslfjkslfklejkfejsklfjeskl");
         String email = userDTO.getEmail();
         boolean emailExists = userRepository.existsByEmail(email);
         if(emailExists){
