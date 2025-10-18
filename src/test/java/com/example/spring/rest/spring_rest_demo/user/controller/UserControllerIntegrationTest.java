@@ -10,12 +10,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
 import com.example.spring.rest.spring_rest_demo.SpringRestDemoApplication;
+import com.example.spring.rest.spring_rest_demo.user.dto.UserCreateDTO;
 import com.example.spring.rest.spring_rest_demo.user.model.User;
 import com.example.spring.rest.spring_rest_demo.user.repository.UserRepository;
 
@@ -39,7 +44,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    void testSomething(){
+    void userController_GetUsers_ReturnsAListOfUsers_IT(){
       User john = User.builder()
       .firstName("john")
       .lastName("doe")
@@ -62,4 +67,69 @@ public class UserControllerIntegrationTest {
       assertEquals(2, response.getBody().size());
     }
 
+    @Test
+    void userController_GetUserById_ReturnsAUser(){
+       User john = User.builder()
+      .firstName("john")
+      .lastName("doe")
+      .email("johndoe@mail.com").build();
+      User savedUser = userRepository.save(john);
+
+      ResponseEntity<User> response = testRestTemplate.exchange(
+            "/user/" + savedUser.getId(),
+            HttpMethod.GET,
+            null,
+            User.class
+        );
+      assertEquals(HttpStatus.OK, response.getStatusCode());
+      assertEquals(savedUser.getId(),response.getBody().getId());
+    }
+
+    @Test
+    void userController_DeleteUserById_UserIsDeletedFromDatabaseAndNoContentStatusIsReturned(){
+      User john = User.builder()
+      .firstName("john")
+      .lastName("doe")
+      .email("johndoe@mail.com").build();
+      User savedUser = userRepository.save(john);
+
+      ResponseEntity<Void> response = testRestTemplate.exchange(
+        "/user/"+ savedUser.getId(),
+        HttpMethod.DELETE,
+        null,
+        Void.class
+        );
+
+      assertEquals(HttpStatusCode.valueOf(204), response.getStatusCode());
+    }
+
+    @Test
+    void userController_CreateUser_CreatesUserInDBAndReturnsUser(){
+      UserCreateDTO userCreateDTO = UserCreateDTO.builder()
+      .firstName("cody")
+      .lastName("benson")
+      .email("cody@mail.com")
+      .build();
+      
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+      
+      HttpEntity<UserCreateDTO> httpEntity = new HttpEntity<>(userCreateDTO, headers);
+
+      ResponseEntity<User> response = testRestTemplate.exchange(
+            "/user",
+            HttpMethod.POST,
+            httpEntity,
+            User.class
+        );
+
+      assertEquals(HttpStatusCode.valueOf(201), response.getStatusCode());
+      
+      List<User> users = userRepository.findAll();
+      User user = users.get(0);
+      assertEquals(response.getBody().getId(), user.getId());
+    }
+
+    @Test
+    void userController_ReplaceUser_ShouldUpdateUserInDB
 }
