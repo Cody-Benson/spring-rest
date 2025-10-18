@@ -14,7 +14,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -31,7 +30,18 @@ import com.example.spring.rest.spring_rest_demo.user.repository.UserRepository;
 @TestPropertySource(
   locations = "classpath:application-test.properties")
 public class UserControllerIntegrationTest {
-    @Autowired
+  private final String USER1_FIRST_NAME = "john";
+  private final String USER1_LAST_NAME = "doe";
+  private final String USER1_EMAIL = "johndoe@mail.com";
+
+  private final String USER2_FIRST_NAME = "cody";
+  private final String USER2_LAST_NAME = "benson";
+  private final String USER2_EMAIL = "codybenson@mail.com";
+
+  private final String USER_ENDPOINT = "/user";
+  private final String FORWARD_SLASH = "/";
+  
+  @Autowired
     TestRestTemplate testRestTemplate;
 
     @Autowired
@@ -45,37 +55,40 @@ public class UserControllerIntegrationTest {
     @Test
     void userController_GetUsers_ReturnsAListOfUsers_IT(){
       User john = User.builder()
-      .firstName("john")
-      .lastName("doe")
-      .email("johndoe@mail.com").build();
+      .firstName(USER1_FIRST_NAME)
+      .lastName(USER1_LAST_NAME)
+      .email(USER1_EMAIL).build();
       userRepository.save(john);
 
       User cody = User.builder()
-      .firstName("cody")
-      .lastName("benson")
-      .email("codybenson@mail.com").build();
+      .firstName(USER2_FIRST_NAME)
+      .lastName(USER2_LAST_NAME)
+      .email(USER2_EMAIL).build();
       userRepository.save(cody);
 
       ResponseEntity<List<User>> response = testRestTemplate.exchange(
-            "/user",
+            USER_ENDPOINT,
             HttpMethod.GET,
             null,
             new ParameterizedTypeReference<List<User>>() {}
         );
+      
       assertEquals(HttpStatus.OK, response.getStatusCode());
-      assertEquals(2, response.getBody().size());
+      
+      final int COUNT_OF_USERS = 2;
+      assertEquals(COUNT_OF_USERS, response.getBody().size());
     }
 
     @Test
-    void userController_GetUserById_ReturnsAUser(){
+    void userController_GetUserById_ReturnsAUser_IT(){
        User john = User.builder()
-      .firstName("john")
-      .lastName("doe")
-      .email("johndoe@mail.com").build();
+      .firstName(USER1_FIRST_NAME)
+      .lastName(USER1_LAST_NAME)
+      .email(USER1_EMAIL).build();
       User savedUser = userRepository.save(john);
 
       ResponseEntity<User> response = testRestTemplate.exchange(
-            "/user/" + savedUser.getId(),
+            USER_ENDPOINT + FORWARD_SLASH + savedUser.getId(),
             HttpMethod.GET,
             null,
             User.class
@@ -86,43 +99,44 @@ public class UserControllerIntegrationTest {
 
     @Test
     void userController_GetUserById_ReturnsResourceNotFoundException(){
+      final String USER_1 = "1";
 
       ResponseEntity<User> response = testRestTemplate.exchange(
-            "/user/1",
+            USER_ENDPOINT + FORWARD_SLASH + USER_1,
             HttpMethod.GET,
             null,
             User.class
         );
 
-      assertEquals(404, response.getStatusCode().value());
+      assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
     void userController_DeleteUserById_UserIsDeletedFromDatabaseAndNoContentStatusIsReturned(){
+      final int USER_COUNT_IN_DB = 0;
       User john = User.builder()
-      .firstName("john")
-      .lastName("doe")
-      .email("johndoe@mail.com").build();
+      .firstName(USER1_FIRST_NAME)
+      .lastName(USER1_LAST_NAME)
+      .email(USER1_EMAIL).build();
       User savedUser = userRepository.save(john);
 
       ResponseEntity<Void> response = testRestTemplate.exchange(
-        "/user/"+ savedUser.getId(),
+        USER_ENDPOINT + FORWARD_SLASH + savedUser.getId(),
         HttpMethod.DELETE,
         null,
         Void.class
         );
 
-      assertEquals(HttpStatusCode.valueOf(204), response.getStatusCode());
-      int userCountInDB = 0;
-      assertEquals(userCountInDB,userRepository.findAll().size());
+      assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+      assertEquals(USER_COUNT_IN_DB,userRepository.findAll().size());
     }
 
     @Test
     void userController_CreateUser_CreatesUserInDBAndReturnsUser(){
       UserCreateDTO userCreateDTO = UserCreateDTO.builder()
-      .firstName("cody")
-      .lastName("benson")
-      .email("cody@mail.com")
+      .firstName(USER2_FIRST_NAME)
+      .lastName(USER2_LAST_NAME)
+      .email(USER2_EMAIL)
       .build();
       
       HttpHeaders headers = new HttpHeaders();
@@ -131,13 +145,13 @@ public class UserControllerIntegrationTest {
       HttpEntity<UserCreateDTO> httpEntity = new HttpEntity<>(userCreateDTO, headers);
 
       ResponseEntity<User> response = testRestTemplate.exchange(
-            "/user",
+            USER_ENDPOINT,
             HttpMethod.POST,
             httpEntity,
             User.class
         );
 
-      assertEquals(HttpStatusCode.valueOf(201), response.getStatusCode());
+      assertEquals(HttpStatus.CREATED, response.getStatusCode());
       
       List<User> users = userRepository.findAll();
       User user = users.get(0);
@@ -147,15 +161,15 @@ public class UserControllerIntegrationTest {
     @Test
     void userController_CreateUser_ReturnsConflictException(){
       UserCreateDTO userCreateDTO = UserCreateDTO.builder()
-      .firstName("cody")
-      .lastName("benson")
-      .email("cody@mail.com")
+      .firstName(USER2_FIRST_NAME)
+      .lastName(USER2_LAST_NAME)
+      .email(USER2_EMAIL)
       .build();
       
       User user = User.builder()
-      .firstName("cody")
-      .lastName("benson")
-      .email("cody@mail.com")
+      .firstName(USER2_FIRST_NAME)
+      .lastName(USER2_LAST_NAME)
+      .email(USER2_EMAIL)
       .build();
 
       userRepository.save(user);
@@ -166,41 +180,41 @@ public class UserControllerIntegrationTest {
       HttpEntity<UserCreateDTO> httpEntity = new HttpEntity<>(userCreateDTO, headers);
 
       ResponseEntity<User> response = testRestTemplate.exchange(
-            "/user",
+            USER_ENDPOINT,
             HttpMethod.POST,
             httpEntity,
             User.class
         );
 
-      assertEquals(HttpStatusCode.valueOf(409), response.getStatusCode());
+      assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
     }
 
     @Test
     void userController_ReplaceUser_ShouldUpdateUserInDB(){
       User john = User.builder()
-      .firstName("john")
-      .lastName("doe")
-      .email("johndoe@mail.com").build();
+      .firstName(USER1_FIRST_NAME)
+      .lastName(USER1_LAST_NAME)
+      .email(USER1_EMAIL).build();
       User savedUser = userRepository.save(john);
       
       UserReplaceDTO replaceDTO = UserReplaceDTO.builder()
-      .firstName("cody")
-      .lastName("benson")
-      .email("cody@mail.com").build();
+      .firstName(USER2_FIRST_NAME)
+      .lastName(USER2_LAST_NAME)
+      .email(USER2_EMAIL).build();
 
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
       
       HttpEntity<UserReplaceDTO> httpEntity = new HttpEntity<>(replaceDTO,headers);
       ResponseEntity<User> response = testRestTemplate.exchange(
-        "/user/" + savedUser.getId(),
+        USER_ENDPOINT + FORWARD_SLASH + savedUser.getId(),
         HttpMethod.PUT,
         httpEntity,
         User.class
       );
 
       assertEquals(HttpStatus.OK, response.getStatusCode());
-      assertEquals("cody",response.getBody().getFirstName());
+      assertEquals(USER2_FIRST_NAME,response.getBody().getFirstName());
       
       Long updatedUserId = savedUser.getId();
       User updatedUser = userRepository.getReferenceById(updatedUserId);
